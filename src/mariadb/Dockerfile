@@ -1,16 +1,21 @@
 FROM debian:bullseye
 
-# client too because the client of the serv is ass
-RUN apt update && apt install -y mariadb-client mariadb-server zsh
+RUN apt update && apt install -y mariadb-client mariadb-server zsh gettext-base
 
-#default name for the server "50-server.cnf"
+# Copy MariaDB server configuration
 COPY server.cnf /etc/mysql/mariadb.conf.d/50-server.cnf
 
-COPY init.sql /etc/mysql/
+RUN mkdir /docker-entrypoint-initdb.d
 
-RUN mkdir /run/mysqld
+COPY init.sql.template /docker-entrypoint-initdb.d/.
 
-#default port
+RUN mkdir -p /run/mysqld && chown -R mysql:mysql /run/mysqld
+
+# Expose the default MariaDB port
 EXPOSE 3306
+
+COPY docker-entrypoint.sh .
+RUN chmod +x docker-entrypoint.sh
+ENTRYPOINT ["./docker-entrypoint.sh"]
 
 CMD ["mysqld"]
