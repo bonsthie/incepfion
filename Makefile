@@ -2,8 +2,10 @@
 # SETTING
 # ==================================================================================== #
 
-HOME=/home/babonnet
-DATA=$(HOME)/data
+all: up
+
+HOME := $(shell echo $$HOME)
+export DATA_DIR=$(HOME)/data
 
 PROJECT_NAME=incepfion
 
@@ -40,8 +42,8 @@ help:
 ## up: Start Docker containers
 .PHONY: up
 up:
-	@mkdir -p $(DATA)/mariadb
-	@mkdir -p $(DATA)/wordpress
+	@mkdir -p $(DATA_DIR)/mariadb
+	@mkdir -p $(DATA_DIR)/wordpress
 	@$(DOCKER_COMPOSE) up -d
 
 ## down: Stop and remove Docker containers
@@ -75,10 +77,12 @@ clean:
 	@$(DOCKER_COMPOSE) down --remove-orphans
 	@docker system prune -af
 
-## fclean: Do a (make clean) and remove the data folder
+## fclean: Remove Docker containers, volumes, network, and prune unused data
 .PHONY: fclean
-fclean: clean
-	@rm -rf $(DATA)
+fclean:
+	@$(DOCKER_COMPOSE) down -v --remove-orphans
+	@docker system prune -af
+	@rm -rf $(DATA_DIR)
 
 ## re: Restart all containers (stop, clean, up)
 .PHONY: re
