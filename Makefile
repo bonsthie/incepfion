@@ -84,15 +84,13 @@ logs:
 ## clean: Remove Docker containers and prune unused data
 .PHONY: clean
 clean:
-	@$(DOCKER_COMPOSE) down --remove-orphans
-	@docker network remove incepfion
+	@$(DOCKER_COMPOSE) down --remove-orphans || true
 	@docker system prune -af
 
 ## fclean: Remove Docker containers, volumes, network, and prune unused data
 .PHONY: fclean
 fclean: stop
 	@$(DOCKER_COMPOSE) down -v --remove-orphans || true
-	@docker network remove incepfion || true
 	@docker system prune -af || true
 	@sudo rm -rf $(DATA_DIR)
 
