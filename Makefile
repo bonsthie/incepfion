@@ -9,6 +9,8 @@ export DATA_DIR=$(HOME)/data
 
 PROJECT_NAME=incepfion
 
+SRCS_FOLDER := srcs
+
 # Detect docker-compose or docker compose
 DOCKER_COMPOSE_EXEC := $(shell command -v docker-compose 2>/dev/null)
 DOCKER_COMPOSE_EXEC_ALT := $(shell command -v docker 2>/dev/null && docker --help | grep -q 'compose')
@@ -21,7 +23,7 @@ ifeq ($(DOCKER_COMPOSE_EXEC),)
     endif
 endif
 
-DOCKER_COMPOSE_FILE=./src/docker-compose.yml
+DOCKER_COMPOSE_FILE=./$(SRCS_FOLDER)/docker-compose.yml
 DOCKER_COMPOSE=$(DOCKER_COMPOSE_EXEC) -p $(PROJECT_NAME) -f $(DOCKER_COMPOSE_FILE)
 
 # ==================================================================================== #
@@ -61,10 +63,18 @@ start:
 stop:
 	@$(DOCKER_COMPOSE) stop
 
-## status: Show running Docker containers
+## status: Show a snapshot of running Docker containers and available images
 .PHONY: status
 status:
+	@echo "==> Running Docker Containers:"
 	@docker ps
+	@echo
+	@echo "==> Available Docker Images:"
+	@docker image ls
+	@echo
+	@echo "==> Available Docker Network:"
+	@docker network ls
+
 
 ## logs: Show Docker container logs
 .PHONY: logs
@@ -75,14 +85,16 @@ logs:
 .PHONY: clean
 clean:
 	@$(DOCKER_COMPOSE) down --remove-orphans
+	@docker network remove incepfion
 	@docker system prune -af
 
 ## fclean: Remove Docker containers, volumes, network, and prune unused data
 .PHONY: fclean
-fclean:
-	@$(DOCKER_COMPOSE) down -v --remove-orphans
-	@docker system prune -af
-	@rm -rf $(DATA_DIR)
+fclean: stop
+	@$(DOCKER_COMPOSE) down -v --remove-orphans || true
+	@docker network remove incepfion || true
+	@docker system prune -af || true
+	@sudo rm -rf $(DATA_DIR)
 
 ## re: Restart all containers (stop, clean, up)
 .PHONY: re
