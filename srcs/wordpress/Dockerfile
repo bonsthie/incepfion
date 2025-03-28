@@ -1,6 +1,11 @@
 FROM debian:bullseye
 
-RUN apt update && apt upgrade && apt install -y curl php-fpm php-mysqli zsh
+ENV DEBIAN_FRONTEND=noninteractive
+
+RUN apt update && \
+    apt upgrade -y && \
+    apt install -y curl php-fpm php-mysqli zsh && \
+    apt clean && rm -rf /var/lib/apt/lists/*
 
 RUN mkdir -p /run/php && chown www-data:www-data /run/php
 
